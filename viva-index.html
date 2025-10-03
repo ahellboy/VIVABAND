@@ -1,0 +1,249 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VIVA Rock Band</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: linear-gradient(to bottom, #1a1a1a, #2d2d2d); }
+    .section { min-height: 100vh; padding: 4rem 1rem; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body class="text-white font-sans">
+  <!-- 导航栏 -->
+  <nav class="bg-red-600 text-white p-4 fixed w-full top-0 z-10">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-2xl font-bold">VIVA</h1>
+      <ul class="flex space-x-6">
+        <li><a href="#home" class="hover:underline">乐队介绍</a></li>
+        <li><a href="#members" class="hover:underline">成员介绍</a></li>
+        <li><a href="#performances" class="hover:underline">过去表演</a></li>
+        <li><a href="#guestbook" class="hover:underline">粉丝留言</a></li>
+        <li>
+          <select id="language" class="bg-red-700 text-white p-1 rounded">
+            <option value="zh">中文</option>
+            <option value="en">English</option>
+          </select>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- 乐队介绍 -->
+  <section id="home" class="section flex items-center justify-center">
+    <div class="text-center max-w-2xl">
+      <h2 data-lang="zh" class="text-4xl font-bold mb-4">欢迎体验VIVA的摇滚世界！</h2>
+      <h2 data-lang="en" class="text-4xl font-bold mb-4 hidden">Welcome to VIVA's Rock World!</h2>
+      <p data-lang="zh" class="text-lg mb-6">
+        VIVA是一支由六名高中生组成的摇滚乐队，成立于2023年。我们用音乐点燃青春，传递热血与梦想！快来加入我们的音乐旅程吧！
+      </p>
+      <p data-lang="en" class="text-lg mb-6 hidden">
+        VIVA is a rock band formed by six high school students in 2023. We ignite youth with music and share passion and dreams! Join our musical journey!
+      </p>
+      <a href="#members" class="bg-red-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-red-700">了解我们</a>
+    </div>
+  </section>
+
+  <!-- 成员介绍 -->
+  <section id="members" class="section bg-gray-800">
+    <div class="container mx-auto px-4">
+      <h2 data-lang="zh" class="text-3xl font-bold text-center mb-8">成员介绍</h2>
+      <h2 data-lang="en" class="text-3xl font-bold text-center mb-8 hidden">Meet the Band</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-gray-900 rounded-lg p-4 text-center">
+          <h3 data-lang="zh" class="text-xl font-semibold">张伟 (队长 & 主音吉他)</h3>
+          <h3 data-lang="en" class="text-xl font-semibold hidden">Wei Zhang (Leader & Lead Guitar)</h3>
+          <p data-lang="zh" class="text-gray-300">乐队灵魂人物，擅长创作旋律。</p>
+          <p data-lang="en" class="text-gray-300 hidden">The soul of the band, excels at crafting melodies.</p>
+        </div>
+        <div class="bg-gray-900 rounded-lg p-4 text-center">
+          <h3 data-lang="zh" class="text-xl font-semibold">李娜 (主唱)</h3>
+          <h3 data-lang="en" class="text-xl font-semibold hidden">Na Li (Vocalist)</h3>
+          <p data-lang="zh" class="text-gray-300">嗓音震撼，充满爆发力。</p>
+          <p data-lang="en" class="text-gray-300 hidden">Powerful voice with explosive energy.</p>
+        </div>
+        <div class="bg-gray-900 rounded-lg p-4 text-center">
+          <h3 data-lang="zh" class="text-xl font-semibold">王芳 (主唱)</h3>
+          <h3 data-lang="en" class="text-xl font-semibold hidden">Fang Wang (Vocalist)</h3>
+          <p data-lang="zh" class="text-gray-300">温柔嗓音，情感丰富。</p>
+          <p data-lang="en" class="text-gray-300 hidden">Soft voice with rich emotions.</p>
+        </div>
+        <div class="bg-gray-900 rounded-lg p-4 text-center">
+          <h3 data-lang="zh" class="text-xl font-semibold">陈磊 (贝斯手)</h3>
+          <h3 data-lang="en" class="text-xl font-semibold hidden">Lei Chen (Bassist)</h3>
+          <p data-lang="zh" class="text-gray-300">低音节奏的掌控者。</p>
+          <p data-lang="en" class="text-gray-300 hidden">Master of bass rhythms.</p>
+        </div>
+        <div class="bg-gray-900 rounded-lg p-4 text-center">
+          <h3 data-lang="zh" class="text-xl font-semibold">赵强 (鼓手)</h3>
+          <h3 data-lang="en" class="text-xl font-semibold hidden">Qiang Zhao (Drummer)</h3>
+          <p data-lang="zh" class="text-gray-300">节奏大师，点燃现场。</p>
+          <p data-lang="en" class="text-gray-300 hidden">Rhythm master, ignites the stage.</p>
+        </div>
+        <div class="bg-gray-900 rounded-lg p-4 text-center">
+          <h3 data-lang="zh" class="text-xl font-semibold">刘洋 (鼓手)</h3>
+          <h3 data-lang="en" class="text-xl font-semibold hidden">Yang Liu (Drummer)</h3>
+          <p data-lang="zh" class="text-gray-300">鼓点精准，活力四射。</p>
+          <p data-lang="en" class="text-gray-300 hidden">Precise beats, full of energy.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 过去表演 -->
+  <section id="performances" class="section">
+    <div class="container mx-auto px-4">
+      <h2 data-lang="zh" class="text-3xl font-bold text-center mb-8">过去表演</h2>
+      <h2 data-lang="en" class="text-3xl font-bold text-center mb-8 hidden">Past Performances</h2>
+      <div class="space-y-6">
+        <div class="bg-gray-900 rounded-lg p-4">
+          <h3 data-lang="zh" class="text-xl font-semibold">2024年学校音乐节</h3>
+          <h3 data-lang="en" class="text-xl font-semibold hidden">2024 School Music Festival</h3>
+          <p data-lang="zh" class="text-gray-300">我们献上的首场演出，点燃全场！</p>
+          <p data-lang="en" class="text-gray-300 hidden">Our debut performance, rocking the stage!</p>
+        </div>
+        <div class="bg-gray-900 rounded-lg p-4">
+          <h3 data-lang="zh" class="text-xl font-semibold">2024年市青少年音乐会</h3>
+          <h3 data-lang="en" class="text-xl font-semibold hidden">2024 City Youth Concert</h3>
+          <p data-lang="zh" class="text-gray-300">与本地乐队同台，展现VIVA风采。</p>
+          <p data-lang="en" class="text-gray-300 hidden">Shared stage with local bands, showcasing VIVA's style.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 粉丝留言 -->
+  <section id="guestbook" class="section bg-gray-800">
+    <div class="container mx-auto px-4">
+      <h2 data-lang="zh" class="text-3xl font-bold text-center mb-8">粉丝留言</h2>
+      <h2 data-lang="en" class="text-3xl font-bold text-center mb-8 hidden">Guestbook</h2>
+      <div class="max-w-lg mx-auto">
+        <div class="mb-4">
+          <input id="guestbook-name" class="w-full p-2 bg-gray-900 text-white rounded mb-2" placeholder="你的名字 / Your Name" />
+          <textarea id="guestbook-message" class="w-full p-2 bg-gray-900 text-white rounded" rows="4" placeholder="留下你的留言 / Leave your message"></textarea>
+          <button id="submit-guestbook" class="bg-red-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-red-700 mt-2">提交 / Submit</button>
+        </div>
+        <div id="guestbook-entries" class="space-y-4"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer class="bg-red-600 text-white p-4 text-center">
+    <p data-lang="zh">&copy; 2025 VIVA乐队. 保留所有权利。</p>
+    <p data-lang="en" class="hidden">&copy; 2025 VIVA Band. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+
+    // 语言切换
+    const languageSelect = document.getElementById('language');
+    const elements = document.querySelectorAll('[data-lang]');
+    
+    function updateLanguage(lang) {
+      elements.forEach(el => {
+        el.classList.toggle('hidden', el.dataset.lang !== lang);
+      });
+      // 更新导航栏文本
+      const navLinks = document.querySelectorAll('nav ul li a:not([href="#guestbook"])');
+      const navTexts = {
+        zh: ['乐队介绍', '成员介绍', '过去表演', '粉丝留言'],
+        en: ['Home', 'Members', 'Performances', 'Guestbook']
+      };
+      navLinks.forEach((link, index) => {
+        link.textContent = navTexts[lang][index];
+      });
+    }
+
+    languageSelect.addEventListener('change', () => {
+      updateLanguage(languageSelect.value);
+    });
+
+    // 粉丝留言功能
+    const guestbookEntries = document.getElementById('guestbook-entries');
+    const submitButton = document.getElementById('submit-guestbook');
+    
+    function loadGuestbook() {
+      const entries = JSON.parse(localStorage.getItem('guestbook') || '[]');
+      guestbookEntries.innerHTML = '';
+      entries.forEach(entry => {
+        const div = document.createElement('div');
+        div.className = 'bg-gray-900 p-4 rounded';
+        div.innerHTML = `<p class="font-semibold">${entry.name}</p><p>${entry.message}</p><p class="text-gray-500 text-sm">${entry.date}</p>`;
+        guestbookEntries.appendChild(div);
+      });
+    }
+
+    submitButton.addEventListener('click', () => {
+      const name = document.getElementById('guestbook-name').value;
+      const message = document.getElementById('guestbook-message').value;
+      if (name && message) {
+        const entries = JSON.parse(localStorage.getItem('guestbook') || '[]');
+        entries.push({
+          name,
+          message,
+          date: new Date().toLocaleString()
+        });
+        localStorage.setItem('guestbook', JSON.stringify(entries));
+        document.getElementById('guestbook-name').value = '';
+        document.getElementById('guestbook-message').value = '';
+        loadGuestbook();
+      }
+    });
+
+    // 初始化
+    updateLanguage('zh');
+    loadGuestbook();
+  </script>
+</body>
+</html>
